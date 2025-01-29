@@ -1,0 +1,178 @@
+\documentclass[twocolumn, a4paper]{ieicejsp}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage[dvipdfmx]{color}
+\usepackage{bm}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
+\usepackage{latexsym}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{pxrubrica}
+\usepackage{tikz}
+\pagenumbering{roman}
+\usepackage{epsfig}
+\usepackage{subcaption}
+\usepackage{bm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{algpseudocode}
+ \usepackage{comment}
+
+\usepackage{newtxtext}
+\usepackage[varg]{newtxmath}
+\usepackage[top=20truemm,bottom=20truemm,left=23truemm,right=23truemm]{geometry}
+\pagenumbering{roman}
+\newcommand{\argmax}{\mathop{\mathrm {arg~max}}\limits}
+
+\begin{document}
+\fontsize{9}{9}\selectfont
+%\maketitle
+\twocolumn[
+  \begin{flushright}
+    2025年2月5日
+  \end{flushright}
+  \begin{center}
+    {\bf トラヒック負荷を考慮したRTTによるEvil-Twin攻撃検知手法}
+  \end{center}
+  \vspace*{0.5cm}
+
+  \begin{flushright}
+    電気電子情報工学専攻\hspace{\fill}MA23025 \ruby{上田智之}{うえ|だ|とも|ゆき}\\
+    情報通信システム工学研究\hspace{\fill}指導教員 上岡英史
+    \vspace*{0.5cm}
+  \end{flushright}]
+  
+\section{はじめに}
+近年の通信技術の進歩により，IoTやスマートフォン，タブレット，パソコンなど無線端末機器の利用者が増加している\cite{総務省2020令和}．また，無線LANの急速な普及により，カフェやオフィス，駅などの公共施設で公衆無線LANサービスが広く展開されている．特にフリーWi-Fiの利用により，手軽にインターネット接続が可能となった．しかし，その反面，フリーWi-Fiはセキュリティ面に様々な問題を抱えている．その一つとして，正規の無線LANアクセスポイント（AP）を偽装した不正APにより個人情報の窃取などを行うEvil-Twin攻撃が挙げられる．Evil-Twin攻撃とは，正規の無線LANアクセスポイントを偽装した不正アクセスポイントにユーザを誤って接続させることで，そのユーザの端末に対し情報の窃取などの様々な攻撃を行うことである．\par
+不正APの検知手法には，管理者側で判定をかける手法\cite{10367998}とユーザ側で判定をかける手法\cite{9405821}の，主に2種類ある．管理者側で判定する場合には，フィンガープリントを用いた方法が一般的だが，コストや運用負担が課題となっている．一方，ユーザ側では，RTT（往復遅延時間）を利用した低コストな検知手法が注目されている．しかし，既存のRTTを用いた研究では，APのトラヒック負荷が検知精度に与える影響について十分に考慮されていない．
+本研究では，トラヒック負荷を考慮した実験を仮想環境下で行い，検知精度の向上を図ることで，その有効性を示す．
+%管理者側\cite{10367998, 9694649}
+
+\section{提案手法}
+想定シナリオにおけるEvil-Twin攻撃とは，図1のように，ユーザと正規APの間に不正APが割り込みような状況である．Evil-Twin攻撃時のRTTは通常時に比べ異なること，またトラヒック混雑時にはどちらの分散も大きくなるために判別は難しいことが既存の研究\cite{9405821}により明らかにされている．そこで，本研究における提案手法ではEvil-Twin攻撃が行われているかどうかを，ユーザが負荷ごとの閾値を用いて検知することを考える．検知における閾値を以下で説明する．\par
+\par
+
+\begin{figure}[b]
+  \centering
+  \includegraphics[scale=0.21]{evil-twin.eps}
+  \caption{Evil-Twin 攻撃}
+\label{fig_PowerConsumption}
+\end{figure}
+
+本研究では，トラヒック負荷をクラス$i$毎に分類し，$i \in \{1,2,\dots,C\} = \mathcal{C}$ とする．ここで，$C$ はトラヒック負荷の種類数を表す．本研究の目的は，攻撃時および非攻撃時に収集したRTTデータを活用し，不正アクセスポイント（AP）の存在を検出することである．特に，Evil-Twin攻撃のような不正APを効率的かつ正確に検知するアルゴリズムの構築を目指す．\par
+本提案手法では，最初に正規APから得られる $t$ 個のデータポイントを学習データとして利用する．このデータを基に，MCSを利用した既存手法（以下，固定閾値法）\cite{9405821}に従いk-meansクラスタリングを適用する．この手法により，各負荷クラス $i$ に対して2つのクラスタ中心，すなわち上限値 $\gamma_i^{\rm upper}$ および下限値 $\gamma_i^{\rm lower}$ を導出し，RTTデータを測定して累積分布を求める．具体的には，各負荷クラス $i$ に対してしきい値 $\theta_i$ を設定する．この $\theta_i$ は，クラスタ中心のy軸値の比率として $\theta_i=\frac{\gamma^{\rm upper}i}{\gamma^{\rm lower}i}$ で表される．同様に，各負荷クラス $i$ に対してk-meansアルゴリズムで得られるしきい値 $\rho{i,j}$ を使用する．ここで，$i \in \mathcal{C}$，$j \in \mathcal{D}$（データセット番号$j$）．$\mathcal{D}={{1,2,...,D}}$ は評価に使用するデータセットのインデックスを表す．\par 
+Algorithm 1に示すように，特定の負荷 $i \in \mathcal{C}$ と取得データ番号 $j \in \mathcal{D}$ において，もし$\rho_{i,j} > \theta_i$ であれば，不正APの存在が検出される．\par
+なお，MCS利用法\cite{9405821}においては，トラヒック負荷が変化しても $\theta_i$ の値は固定される．一方で，本研究では$\theta_i$はトラヒックによって変化する．さらに，本研究では，既存研究と同様にk-means法による初期検知後，閾値を超えた場合に累積分布関数（CDF）を利用した追加検出を行い，検出精度の向上を図る．この際，閾値同様に，各負荷クラスごとのCDF作成を行う．特に，閾値値決定に用いたデータから信頼区間の上側値 $\theta_i^{\rm CI-upper}$ を計算し，収集データの平均$RTT_i^{\rm ave}$ が $\theta_i^{\rm CI-upper}$ を超える場合，そのデータをEvil-Twin攻撃パケットとして分類する．\par
+最終的に，検出結果の評価は正解率とF値を用いて行う．ここで，正解率とは「不正APあり」，「不正APなし」と回答した回数のうち，正しかった割合である．またF値は，「不正APあり」を陽性，「不正APなし」を陰性として適合率と再現率を求め，そこから調和平均としてまとめたものである．
+
+
+
+\begin{algorithm}[htbp]
+    \caption{Rogue identification}
+    \label{alg}
+    \begin{algorithmic}[1]    %行番号をつけないときは[1]は不要
+    {\small
+    \STATE /* gathering RTT */
+    \STATE /* input parameters: $RTT, i^\dagger, \theta_{i^\dagger}, RTT^{\rm{ave}}_{i^\dagger}, \theta^{\rm{CI-upper}}_{i^\dagger}$ */
+    \FOR {$RTT$ in $i^\dagger$}
+    \STATE /* Detect with k\_means */
+    \STATE $\gamma \leftarrow \mathrm{k\_mean(RTT)}$
+    \STATE $\gamma^{\rm upper}_{i^\dagger} \leftarrow \mathrm{max(\gamma)}$
+    \STATE $\gamma^{\rm lower}_{i^\dagger} \leftarrow \mathrm{min(\gamma)}$
+    \STATE $\rho_{i,j}=\frac{\gamma^{\rm upper}_{i^\dagger}}{\gamma^{\rm lower}_{i^\dagger}}$
+    \IF {$\rho_{{i^\dagger},j}>\theta_{i^\dagger}$}
+    \STATE /* Detect with CDF */
+    \STATE /* CI = Confidence interval */
+    \IF {$RTT^{\rm{ave}}_{i^\dagger} > \theta^{\rm{CI-upper}}_{i^\dagger}$}
+    \RETURN (rougue-AP is detected)
+    \ENDIF
+    \ELSE
+    \RETURN (No rougue-AP is detected)
+    \ENDIF
+    \ENDFOR
+    }
+    \end{algorithmic}
+\end{algorithm}
+
+
+\section{数値解析}
+\subsection{実験方法}
+Evil-Twin攻撃のための環境は，仮想環境上で3種類のhostで構成される．図2に示すように，host1をユーザ，host2，host3をAPとして扱う．通常時の実験はhost1からhost2へpingを送信し，攻撃時の場合はhost2を不正AP，host3を正規APとして扱い，host1からhost3へpingを送信してRTTを測定する．\par
+また，負荷の再現にはiperfを使用する．iperfは，ネットワークパフォーマンスを測定および評価するためのツールであり，TCPやUDPを用いた帯域幅，遅延，パケット損失などの特性を分析することができる．本研究では，ネットワークに負荷をかけるために使用する．\par
+実験では，iperfによってクラス$i$ごとにかけた特定の負荷$L_i$[Mbps]をかけながら負荷ごとpingを300回，1秒間に10回の割合で送信する．このプロセスを10回繰り返す．\par
+10セットのうち，7セットをトレーニングデータ，3セットをテストデータとして用いる．トレーニングデータから，前述したk-means法により，負荷ごとの閾値を算出，検知を行う．\par
+最後に，負荷ごとに閾値を分けず，最も負荷の低い閾値のみを使用して各負荷時の検知を行う手法（以下，固定閾値手法）を対抗手法とし結果を比較する．\par
+本実験では，iperfのudpモードを用いて，$L_1=100$，$L_2=500$，$L_3=1000$，$L_4=1500$の帯域幅でデータを送信することで負荷をかけた．次に，iftopと呼ばれるツールで測定し，以下のように定義した次の4種類の数値としてのトラヒック負荷$R_i$を後の数値計算で使用する負荷$i^\dagger$とした．$L_{total}$はiftopで測定した総トラヒック量(Mbits)，$\mathrm{R_i}$はトラヒック負荷(Mbps)，$\Delta \tau$は測定時間(s)である．
+\begin{equation}
+R_i = \frac{L_{\mathrm{total}}}{\Delta \tau}.
+\end{equation}
+式(1)を用いて算出されたそれぞれのトラヒック負荷は$R_1=96$，$R_2=482$，$R_3=944$，$R_4=1304$，また測定時間は${\Delta \tau}=30$である．iperfでは全てudpパケットを使用するため，パケットロスの影響により，iftopで観測されるトラヒックは指定した負荷と異なる値となる．つまり，iftopで観測されたトラヒックが実際の負荷となる点に留意する必要がある．また，各クラス$i$の測定データサイズ（送受信したpingの総数）は$T_i=300$，評価に使用するデータセットの数$D$は$D=24$である．
+
+\begin{comment}
+iftopとは，ネットワークインターフェイス上の送受信トラヒックをリアルタイムでモニタリングし，接続元と接続先ごとの帯域使用量を可視化することのできるツールである．
+\end{comment}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.29]{evil-twin2.eps}
+  \caption{実験環境}
+\label{fig_PowerConsumption}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.3]{traffic-rtt.eps}
+  \caption{トラヒックに対するRTTの変化}
+\label{fig_PowerConsumption}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[scale=0.43]{rtt1.eps}
+  \caption{$i=1$時のRTT変化}
+\label{fig_PowerConsumption}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[scale=0.43]{rtt4.eps}
+  \caption{$i=4$時のRTT変化}
+\label{fig_PowerConsumption}
+\end{figure}
+ 
+\subsection{RTT分布と検知精度}
+Evil-Twin攻撃が起こるとき，正規APと不正APでホップ数の違いによって接続時のRTTに差が生じる．さらに，トラヒック負荷が高くなることにより，RTTと分散は共に大きくなる．実際にこれを調べるため，正規AP（host2）と不正AP（host3）にそれぞれPC（host1）を接続させ，PCからそれぞれのAPにpingパケットを送信し，応答が返ってくるまでの時間をトラヒックごとに計測した．本研究ではこれをRTTとしている．\par
+図3は，${\Delta \tau}=10$ごとに測定したトラヒック負荷$R_i$に対するRTTの変化を，トラヒック負荷$R_i$ごとに100パケットずつ測定した結果である．また，図4と図5にホップ数の違いによるRTTの変化の結果を示す．図4が正規APに，図5が不正APに接続した際のRTTである．青が正規APに，赤が不正APに接続した際のRTTである．図3より，トラヒック負荷が96Mbpsと小さい時は，平均RTTも小さい傾向にあるが，最も右端の1304Mbpsになると，平均RTTは全体として大きくなり，またその散らばりも大きくなっていることが見て取れる．また，図4，図5より，トラヒック負荷が低負荷時におけるAPとPC間のRTTは，通常時とEvil-Twin攻撃時で大きく異なることがわかる．しかし，トラヒック負荷
+が高負荷になるにつれ，通常時とEvil-Twin 攻撃時共にRTTが大きくばらけていっていることが見て取れる．\par
+また，検知結果を見てみると，固定閾値手法では正解率が0.8程度であるのに対し，F値では0.74と低くなっていることが見て取れる．それに対し，本提案手法では，正解率，F値ともに0.96と高い検知精度を示すことができている．これは，トラヒック負荷が$i=1$のときである96Mbpsのときの閾値（固定閾値手法）のままでは$i=3$や$i=4$のときのような1Gbpsを超える高負荷には対応できていないことがうかがえる．よって，提案法の正解率，F値ともに固定閾値手法よりも大幅に向上可能であることがわかった．したがって，トラヒック負荷を考慮した検知の有効性が示された．
+
+ \begin{table}[htbp]
+ \centering
+ \caption{検知結果} \label{tab:result}
+ \scalebox{0.8}{
+ \begin{tabular}{|c|c|c|c|}  
+ \hline
+ & 固定閾値手法 \cite{9405821} & 提案手法 \\ 
+ \hline
+ Accuracy & 0.79 & 0.96 \\
+ \hline
+ F-score & 0.74 & 0.96 \\
+ \hline
+\end{tabular}
+}
+\end{table}
+
+\section{おわりに}
+\small
+本論文では，ユーザと管理者の両方の計測値を用いてトラヒック負荷を考慮した新たなEvil-Twin攻撃検知手法を提案した．実験によれば，提案手法はF値，正解率共に0.9を超える有効な手法であることを確かめた．今後の課題として，実機でのトラヒック負荷を考慮した検知手法の拡張を行う必要がある．また，実機を用いた実験を通じて，トラヒックへの影響要因を考慮した適切な改良を加える必要がある．
+ 
+\bibliography{refs}
+\bibliographystyle{IEEEtran}
+
+\section*{研究実績}
+\bibitem{.}
+T.Ueda and S.Miyata, ``\rm{A Client-Side Evil-Twin Attack Detection System with Threshold Considering Traffic Load},'' \emph{IEEE ICCE-Berlin}, pp. 68-69, 9 2023.
+\end{document}

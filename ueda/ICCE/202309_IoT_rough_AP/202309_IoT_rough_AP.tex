@@ -1,0 +1,212 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{here}
+%\usepackage{cite}
+%\usepackage{amsmath,amsfonts}
+\usepackage{amsthm}
+%\usepackage{algorithmic}
+%\usepackage{xcolor}
+\usepackage{latexsym}
+\usepackage{newtxtext}
+\usepackage[varg]{newtxmath}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{algpseudocode}
+\usepackage{threeparttable}
+\usepackage{bm}
+%\usepackage{textcomp}
+\usepackage{comment}
+\usepackage[noend]{algorithm}
+\setlength\textfloatsep{2truemm}
+
+
+\renewcommand{\baselinestretch}{0.93}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{A Client-Side Evil-Twin Attack Detection System with Threshold Considering Traffic Load\\
+
+%\thanks{Identify applicable funding agency here. If none, delete this.}
+}
+
+\author{\IEEEauthorblockN{\ddag Tomoyuki Ueda, \dag Amgad Saif, \ddag Sumiko Miyata, \dag\dag Masataka Nakahara, \dag\dag Ayumu Kubota}
+\IEEEauthorblockA{\ddag Shibaura Institute of Technology, Tokyo, Japan \\
+  \dag KTH Royal Institute of Technology, Stockholm, Sweden \\
+  \dag\dag KDDI Research, Inc., Saitama, Japan\\
+\ddag \{ma23025, sumiko\}@shibaura-it.ac.jp, \dag asmsaif@kth.se, \dag\dag \{ms-nakahara, ay-kubota\}@kddi.com}
+}
+
+
+\maketitle
+
+
+\begin{abstract}
+In recent years, public wireless LANs have been increasingly installed in public places. On the other hand, free Wi-Fi has various security issues. One of these problems is the evil-twin attack. There are some studies that focus on the round-trip time (RTT) as a detection method for evil-twin attacks. However, their detection criteria are insufficient because they do not assume the traffic load to set the criteria. In this paper, we propose a new evil-twin attack detection method with threshold for detection criteria considering traffic load.  
+\end{abstract}
+
+\begin{IEEEkeywords}
+Evil-twin, Rogue access point, Round trip time
+\end{IEEEkeywords}
+
+\section{Introduction}
+In recent years, the rapid proliferation of wireless LANs has led to the enhancement of wireless LAN services and Internet of Things (IoT) devices in various public facilities.  Furthermore, the global shift to remote work and online classes due to the new coronavirus has amplified the use of these networks. However, this increased usage has brought various security issues to the fore. One such issue is the evil-twin attack \cite{2021evil}. Evil-twin attack is a type of attack where users are tricked into connecting to a malicious AP that impersonates a legal one. This attack aims to steal information or deliver malware to the connected users. Thus, we need to detect theses rough APs. \par
+Existing studies on rogue AP detection can be divided into two main categories; administrator-side \cite{9339980,9231042,9222455} and user-side \cite{5062077,8955158,9405821}. Most of existing studies for detection of rough AP focus on the administrator side \cite{9339980, 9231042} because they can collect traffic data and perform centralized management \cite{9339980}. However, these detection methods on the administrator side is costly in terms of time and money, thus, there are many public wireless LANs that do not take any countermeasures.\par
+For user-side detection, delay based methods with Round-Trip Time (RTT) are common \cite{5062077,8955158,9405821}. Kitisriworapan et al. \cite{9405821} state that traffic load in the system leads to increase of variation in RTT. However, this conventional method does not assume that traffic load changes. To know the traffic load of a system, the administrator needs to manage it. However, the only research on the administrator's side is costly detection using fingerprinting and other methods.\par
+In this paper, we focus on both user and administrator side for detection and proposes an attack detection method that sets a threshold every traffic load. Moreover, we show the effectiveness of our detection method by using IoT networks. \par
+The paper is structured as follows. Section 2 mentions the proposed method in detail, Section 3 presents the experimental method and results. Section 4 presents the conclusions and the problems and issues in this study.
+
+\begin{comment}
+\begin{figure}[t]
+  \centering
+  \includegraphics[scale=0.2]{evil-twin.eps}
+  \caption{Evil Twin Attack}
+\end{figure}
+
+\begin{figure}[b]
+  \centering
+  \includegraphics[scale=0.25]{assumed-enviorment1.eps}
+  \caption{Assumed enviorment1}
+\end{figure}
+\end{comment}
+
+\begin{figure}[b]
+  \centering
+  \includegraphics[scale=0.2]{assumed-enviorment2.eps}
+  \caption{Assumed enviorment.}
+\end{figure}
+
+\section{Proposed method}
+In this study, we assume that some devices connect to rough AP relayed to legal AP when evil-twin attack. In our proposed method, we consider detecting whether an evil-twin attack is occurring by using thresholds every traffic load.\par
+We define the traffic load as $i$, $i \in \{1,2,...,C\}=\mathcal C$. Let $C$ be the number of types of traffic load. By collecting RTT data based on the devices and the load generated using iperf, we aim to detect the rogue AP.\par
+In our proposed method, the initial $t$ data points obtained from the legal AP are used as training data. Referring to \cite{9405821}, we use k-means method in order to derive two cluster centroids $\gamma_i^{\rm upper}$ and $\gamma_i^{\rm lower}$, and derive cumulative distribution by measuring RTT data.  Specifically, for each load class $i$, we set threshold $\theta_i$, where $\theta_i=\frac{\gamma^{\rm upper}_i}{\gamma^{\rm lower}_i}$, representing the ratio of y-axis values of the cluster centroids. Similarly, we use the derived threshold $\rho_{i,j}$, where $i \in \mathcal{C}$, obtained through the k-means algorithm for each load class $i$, and $j \in \mathcal D$ data set number $j$ to detect the rogue AP. Here, $\mathcal{D}=\{{1,2,...,D}\}$ represents the index of the data set used for evaluation.\par
+As illustrated in Algorithm 1, for a specific load class $i \in \mathcal{C}$ and data set number $j \in \mathcal{D}$, if $\rho_{i,j} > \theta_i$, the presence of a rogue AP is detected. Note that, $\theta_i$ is not changed by changing traffic load in reference \cite{9405821}. After our detection method with k-means, we perform additional detection using the cumulative distribution function (CDF). We calculate the upper confidence interval value denoted as $\theta^{\rm{CI-upper}}_i$ from the same data used for the threshold determination. If the average round-trip time $RTT^{\rm{ave}}_i$ of the collected data is greater than $\theta^{\rm{CI-upper}}_i$, these packets are treated as evil twin attack packets. 
+
+
+\begin{algorithm}[t]
+    \caption{Rogue identification}
+    \label{alg}
+    \begin{algorithmic}[1]    %行番号をつけないときは[1]は不要
+    {\small
+    \STATE /* gathering RTT */
+    \STATE /* input parameters: $RTT, i, \theta_i, RTT^{\rm{ave}}_i, \theta^{\rm{CI-upper}}_i$ */
+    \FOR {$RTT$ in $i$}
+    \STATE /* Detect with k\_means */
+    \STATE $\gamma \leftarrow \mathrm{k\_mean(RTT)}$
+    \STATE $\gamma^{\rm upper}_i \leftarrow \mathrm{max(\gamma)}$
+    \STATE $\gamma^{\rm lower}_i \leftarrow \mathrm{min(\gamma)}$
+    \STATE $\rho_{i,j}=\frac{\gamma^{\rm upper}_i}{\gamma^{\rm lower}_i}$
+    \IF {$\rho_{i,j}>\theta_i$}
+    \STATE /* Detect with CDF */
+    \STATE /* CI = Confidence interval */
+    \IF {$RTT^{\rm{ave}}_i > \theta^{\rm{CI-upper}}_i$}
+    \RETURN (rougue-AP is detected)
+    \ENDIF
+    \ELSE
+    \RETURN (No rougue-AP is detected)
+    \ENDIF
+    \ENDFOR
+    }
+    \end{algorithmic}
+\end{algorithm}
+
+
+\section{Results for our method}
+\subsection{Experimental Methods}
+As shown in Fig.1, the experiment is carried out by applying a load between two connected PCs using iperf and measuring the time taken for the AP to ping google.com and return as RTT. For IoT connectivity, the frequency band used is 2.4G. For each experiment, 300 packets of 100-byte pings were sent at a rate of 10 times per second. This process is repeated four times. As shown in Fig. 1, both PCs and smartphones are used to mimic natural traffic.\par
+After the removal of outliers, our detection method is performed on the acquired RTT data. The F-score and accuracy are served as evaluation measures. We compare with a conventional method \cite{9405821} in which the threshold $\theta_i$ is a fixed value (``fixed threshold method''). In our proposed method, thresholds are calculated every load based on the RTT, whereas the fixed threshold method uses only one threshold for detection even if the traffic load is changed. \par
+We set $C=4$; $i=1$ represents no load, $i=2$ represents 3 Mbytes load, $i=3$ represents 5 Mbytes load, and $i=4$ represents 7 Mbytes load. It is assumed that a total of 20 devices (16 IoT devices, 3 PCs, and 1 smartphone) are connected to the AP. Also, detection is performed with a measurement data size of $T_j=300$ for each class $i$ and a detection data size of $D=24$. 
+
+ \begin{table}[b]
+ \centering
+ \caption{Detection result} \label{tab:result}
+ \scalebox{0.8}{
+ \begin{tabular}{|c|c|c|c|}  
+ \hline
+ & Fixed threshold method \cite{9405821} & Proposed Method \\ 
+ \hline\hline 
+ Accuracy & 0.74 & 0.92 \\
+ \hline
+ F-score & 0.79 & 0.92 \\
+ \hline
+\end{tabular}
+}
+\end{table}
+
+
+\subsection{RTT distribution and detection accuracy}
+The resulting RTT graphs from the experiment are illustrated in Figs.2--3. These figures display the RTTs for connections to the legal APs with blue plotslegal and to the rogue APs with red points. Without iperf, both blue and red points overlap. However, when a 7 MB load is applied, there is a significant difference in the variability of RTTs for both the legal and rogue APs. \par
+Accuracy and F-score are used as evaluation metrics. TABLE \ref{tab:result} presents the results of calculating accuracy and F-score based on the detection outcomes. As observed from TABLE \ref{tab:result}, the accuracy for the fixed threshold method is 0.74, while the proposed method achieves an accuracy of 0.92. Regarding the F1 score, the baseline method achieves 0.79, while the proposed method achieves 0.92, indicating different values. Thus, our proposed method clearly shows the effectiveness of traffic load-aware detection, as both accuracy and F-score outperform the fixed-threshold method.
+
+
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[scale=0.35]{non-iperf.eps}
+  \caption{RTT without iperf.}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[scale=0.35]{iperf-7MB.eps}
+  \caption{RTT for 7MB load with iperf.}
+\end{figure}
+
+\begin{comment}
+\begin{figure}[htbp]
+  \begin{minipage}[htbp]{0.45\linewidth}
+    \centering
+    \includegraphics[keepaspectratio, width=4cm]{non-iperf.eps}
+    \caption{RTT without iperf}
+  \end{minipage}
+  \begin{minipage}[htbp]{0.45\linewidth}
+    \centering
+    \includegraphics[keepaspectratio, width=4cm]{iperf-3MB.eps}
+    \caption{RTT for 3MB load with iperf}
+  \end{minipage}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{minipage}[htbp]{0.45\linewidth}
+    \centering
+    \includegraphics[keepaspectratio, width=4cm]{iperf-5MB.eps}
+    \caption{RTT for 5MB load with iperf}
+  \end{minipage}
+  \begin{minipage}[htbp]{0.45\linewidth}
+    \centering
+    \includegraphics[keepaspectratio, width=4cm]{iperf-7MB.eps}
+    \caption{RTT for 7MB load with iperf}
+  \end{minipage}
+\end{figure}
+\end{comment}
+
+
+
+\section{Conclusion}
+In this paper, we proposed a novel evil-twin attack detection method that takes into account the traffic load by using both user and administrator measurements. Our experiments show that our proposed method is effective with F-score exceeding 0.9. In the future work, we plan to extend this detection method by taking into account the characteristics of both traffic load.
+
+
+\section*{ACKNOWLEDGMENT}
+These research results were obtained from the commissioned research(No.05201) by National Institute of Information and Communications Technology (NICT) , Japan.
+
+\begin{thebibliography}{9}
+\bibitem{2021evil} 
+Muthalagu, Raja and Sanjay, Sachin, ``Evil Twin Attack Mitigation Techniques in 802.11 Networks'', {\it International Journal of Advanced Computer Science and Applications}, vol.12(6), 2021.
+\bibitem{9339980}
+Pu, Qiaolin and Ng, Joseph Kee-Yin and Zhou, Mu and Wang, ``Jie A Joint Rogue Access Point Localization and Outlier Detection Scheme Leveraging Sparse Recovery Technique'', {\it IEEE Transactions on Vehicular Technology}, vol.70(2), pp.1866-1877, 2021.
+\bibitem{9231042}
+Asaduzzaman, Md. and Majib, Mohammad Shahjahan and Rahman, Md. Mahbubur, ``Wi-Fi Frame Classification and Feature Selection Analysis in Detecting Evil Twin Attack'', {\it 2020 IEEE Region 10 Symposium (TENSYMP)}, pp.1704-1707, 2020.
+\bibitem{9222455}
+Lovinger, Norbert and Gerlich, Tomas and Martinasek, Zdenek and Malina, Lukas, ``Detection of wireless fake access points'', {\it 2020 12th ICUMT}, pp.113-118, 2020.
+\bibitem{5062077} 
+Han, H. and Sheng, B. and Tan, C. C. and Li, Q. and Lu, S., ``A Measurement Based Rogue AP Detection Scheme'', {\it IEEE INFOCOM 2009}, pp.1593-1601, 2009.
+\bibitem{8955158} 
+Kitisriworapan, Songrit and Jansang, Aphirak and Phonphoem, Anan, ``evil-twin Detection on Client-side'', {\it 2019 16th International Conference on Electrical Engineering/Electronics, Computer, Telecommunications and Information Technology (ECTI-CON)}, pp.697-700, 2019.
+\bibitem{9405821}
+Kitisriworapan, S., Jansang, A. and Phonphoem, ``A. Client-side rogue access-point detection using a simple walking strategy and round-trip time analysis'', {\it J Wireless Com Network 2020}, pp.1-24, 2020.
+\end{thebibliography}
+
+\end{document}
