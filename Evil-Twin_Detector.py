@@ -10,12 +10,13 @@ congestion1 = 2.51
 congestion2 = 5.84  
 congestion3 = 8.94
 congestion4 = 11.24
-theta = congestion2  # 必要に応じて変更
+theta = congestion4  # 必要に応じて変更
 std = 2.22
 mean = 0.83  # 非混雑時のRTTの平均
 
 # 読み込むCSVファイル
-file_name = "rtt_data2.1.csv"
+#file_name = "rtt_data4.3.csv"
+file_name = "rtt_data_evil4.1.csv"
 directory_path = "/Users/tu/Documents/GitHub/B22_UEDA"
 file_path = os.path.join(directory_path, file_name)
 

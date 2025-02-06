@@ -1,5 +1,5 @@
-number of packet,Adjusted RTT(ms)
-1,0.3753000000000001
+number of packet,RTT(ms)
+1,0.3753
 2,0.208
 3,0.125
 4,0.199
